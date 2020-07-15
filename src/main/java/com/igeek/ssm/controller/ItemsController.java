@@ -9,6 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.sql.rowset.serial.SerialStruct;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -67,4 +68,42 @@ public class ItemsController {
         //为了避免重复提交表单的操作，可以选择重定向，地址栏显示目标地址
         return "redirect:findAll.action";
     }
+
+    @RequestMapping("/delete.action")
+    public String delete(Integer id){
+        service.delete(id);
+        return "itemsList.jsp";
+    }
+
+    @RequestMapping("/deleteAll.action")
+    public String deleteAll(List<Integer> ids){
+        service.deleteByIds(ids);
+        return "itemsList.jsp";
+    }
+
+    @RequestMapping("/update.action")
+    public String update(Items items,MultipartFile file) throws IOException {
+        //上传图片
+        if(file!=null){
+            //获得原始图片名称
+            String oldName = file.getOriginalFilename();
+            System.out.println("oldName = "+oldName);
+            //当前若上传图片
+            if(oldName!=null && oldName.length()>0){
+                //产生新的图片名称 = 随机数+原图片的后缀
+                String newName = UUID.randomUUID()+oldName.substring(oldName.lastIndexOf("."));
+
+                //将此图片上传至本地图片服务器路径
+                file.transferTo(new File("E:/ssm/day3/temp/"+newName));
+
+                //将此图片传值到items商品中
+                items.setPic("/pic/"+newName);
+            }
+        }
+
+        service.update(items);
+        return "itemsList.jsp";
+    }
+
+
 }
